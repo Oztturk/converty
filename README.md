@@ -23,7 +23,7 @@ sudo pacman -S ffmpeg imagemagick
 ## Installation
 
 ```bash
-git clone <repo>
+git clone https://github.com/Oztturk/converty.git
 cd converty
 cargo build --release
 sudo cp target/release/converty /usr/local/bin/
