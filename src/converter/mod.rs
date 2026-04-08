@@ -30,7 +30,7 @@ pub fn convert(new_path: &Path, old_ext: &str, new_ext: &str, config: &Config) -
     std::fs::rename(new_path, &tmp_path)
         .map_err(|e| format!("Failed to move file to temp location: {e}"))?;
 
-    let result = run_conversion(&tmp_path, new_path, &old_cat, &new_cat);
+    let result = run_conversion(&tmp_path, new_path, &old_cat, &new_cat, config);
 
     match result {
         Ok(()) => {
@@ -61,19 +61,22 @@ pub fn convert(new_path: &Path, old_ext: &str, new_ext: &str, config: &Config) -
     }
 }
 
-fn run_conversion(input: &Path, output: &Path, old_cat: &Category, new_cat: &Category) -> Result<(), String> {
-    let use_ffmpeg = matches!((old_cat, new_cat), (Category::Video, _) | (_, Category::Video));
+fn run_conversion(input: &Path, output: &Path, old_cat: &Category, new_cat: &Category, config: &Config) -> Result<(), String> {
+    let use_ffmpeg = matches!(
+        (old_cat, new_cat),
+        (Category::Video, _) | (_, Category::Video) | (Category::Gif, _)
+    );
 
     if use_ffmpeg {
-        return tools::run_ffmpeg(input, output, new_cat);
+        return tools::run_ffmpeg(input, output, new_cat, config);
     }
 
-    match tools::run_magick(input, output) {
+    match tools::run_image_conversion(input, output) {
         Ok(()) => Ok(()),
-        Err(magick_err) => {
-            log::warn!("magick failed ({magick_err}), retrying with ffmpeg...");
+        Err(img_err) => {
+            log::warn!("image conversion failed ({img_err}), retrying with ffmpeg...");
             let _ = std::fs::remove_file(output);
-            tools::run_ffmpeg(input, output, new_cat)
+            tools::run_ffmpeg(input, output, new_cat, config)
         }
     }
 }

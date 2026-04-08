@@ -12,7 +12,6 @@ fn main() {
     let config = cli::Config::parse();
 
     check_dependency("ffmpeg");
-    check_dependency("magick");
 
     if let Some(ref p) = config.temp_path {
         println!("Temp directory: {}", p.display());
@@ -41,7 +40,6 @@ fn check_dependency(name: &str) {
         eprintln!("Error: '{name}' not found. Please install it:");
         match name {
             "ffmpeg" => eprintln!("  sudo pacman -S ffmpeg"),
-            "magick" => eprintln!("  sudo pacman -S imagemagick"),
             _ => {}
         }
         std::process::exit(1);
